@@ -1,0 +1,69 @@
+﻿@page "/aanmelden"
+@inject NavigationManager _navigationManager
+@inject HttpClient httpClient
+
+<h2><b>Aanmelden</b></h2>
+<hr>
+
+<EditForm Model="@lid" OnValidSubmit="aanmelden">
+    <DataAnnotationsValidator />
+    <div class="col-6">
+        <InputText id="Email" @bind-Value="lid.Email" type="text" class="form-control" placeholder="E-mailadres" />
+        <ValidationMessage For="@(() => lid.Email)" />
+    </div>
+    <br />
+
+    <div class="col-6">
+        <InputText id="Wachtwoord" @bind-Value="lid.Password" type="password" class="form-control" placeholder="Wachtwoord" />
+        <ValidationMessage For="@(() => lid.Password)" />
+    </div>
+    <br />
+
+    <div class="col-6">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+
+    <div class="col-6">
+        <br />Voorbeelden om mee in te loggen:<br />
+        E-mailadres:&nbsp;<b>sjansen@mrasoft.nl</b>&nbsp;Wachtwoord:&nbsp;<b>Geheim1</b><br />
+        E-mailadres:&nbsp;<b>pveermans@mrasoft.nl</b>&nbsp;Wachtwoord:&nbsp;<b>Geheim2</b><br />
+        E-mailadres:&nbsp;<b>omulder@mrasoft.nl</b>&nbsp;Wachtwoord:&nbsp;<b>Geheim3</b><br />
+    </div>
+
+    <div>
+        <ValidationSummary />
+    </div>
+
+    <div class="col-6" style="color:red">
+        <br /><b>@fout</b><br />
+    </div>
+
+</EditForm>
+
+
+@code {
+
+    private Lid lid = new Lid();
+    private string fout = "";
+
+    public async Task aanmelden()
+    {
+        try
+        {
+            var resultaat = await httpClient.PostAsJsonAsync<Lid>($"/api/Sportschool/aanmelden", lid);
+            if (resultaat.IsSuccessStatusCode)
+            {
+                lid = await resultaat.Content.ReadFromJsonAsync<Lid>();
+            }
+
+            // refreshen - de cookie is gezet...
+            // gebruik de true-parameter om te refreshen en
+            // om de state of the user te tonen
+            _navigationManager.NavigateTo("/", true);
+        }
+        catch
+        {
+            fout = "Het aanmelden is niet gelukt. Probeer het opnieuw.";
+        }
+    }
+}
